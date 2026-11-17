@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>משכן עלי - זמני תפילה — זמני תפילות</title>
+  <style>
+    :root {
+      --bg: #f4f6fa;
+      --card-bg: #ffffff;
+      --header-bg: linear-gradient(135deg, #1b365d 0%, #274c82 100%);
+      --accent-gold: #c59b27;
+      --text: #1c2430;
+      --muted: #5a677a;
+      --border: #e4e9f2;
+      --time-bg: #eef3fb;
+      --time-text: #16335b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 16px 36px;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .container.single {
+      max-width: 560px;
+    }
+    .banner {
+      background: var(--header-bg);
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 22px 24px;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(27, 54, 93, 0.16);
+      border-bottom: 4px solid var(--accent-gold);
+      margin-bottom: 22px;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      white-space: pre-line;
+    }
+    .subtitle {
+      margin-top: 6px;
+      font-size: 1.15rem;
+      color: #f3e3b0;
+      font-weight: 600;
+      white-space: pre-line;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      align-items: start;
+    }
+    .grid.single {
+      grid-template-columns: 1fr;
+    }
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 3px 12px rgba(15, 29, 51, 0.06);
+    }
+    .card-header {
+      margin: 0;
+      padding: 14px 18px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--time-text);
+      background: #f8faff;
+      border-bottom: 2px solid var(--accent-gold);
+      text-align: center;
+      white-space: pre-line;
+    }
+    table.schedule {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    tr.row td {
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      font-size: 1.05rem;
+    }
+    tr.row:first-child td {
+      border-top: none;
+    }
+    tr.row:hover {
+      background: #fafcff;
+    }
+    td.desc {
+      font-weight: 500;
+      white-space: pre-line;
+    }
+    td.time {
+      width: 1%;
+      white-space: nowrap;
+      text-align: left;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--time-text);
+    }
+    td.time[colspan="2"] {
+      width: auto;
+      white-space: pre-line;
+      text-align: right;
+    }
+    tr.sub-row td {
+      border-top: none;
+      padding-top: 0;
+      padding-bottom: 10px;
+      padding-right: 30px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+    .group-title {
+      font-weight: 700;
+      color: var(--time-text);
+      margin-bottom: 4px;
+      white-space: pre-line;
+    }
+    .group-title:last-child {
+      margin-bottom: 0;
+    }
+    .group-times {
+      line-height: 1.65;
+    }
+    .group-item {
+      white-space: nowrap;
+    }
+    .group-time {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--time-text);
+    }
+    .group-label {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.95em;
+    }
+    td.empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+      white-space: pre-line;
+    }
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .banner, .card { box-shadow: none; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .grid.single { grid-template-columns: 1fr; }
+      tr.row td { padding: 6px 12px; font-size: 0.95rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="banner">
+      <h1>משכן עלי - זמני תפילה</h1>
+      <div class="subtitle">ז&#x27; כסלו תשפ״ז​</div>
+    </header>
+    <main class="grid">
+      <section class="card">
+        <h2 class="card-header">זמני תפילות לימי חול</h2>
+        <table class="schedule">
+          <tbody>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">שחרית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">06:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">06:30</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:30</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:30</span> <span class="group-label">(ספרדי)</span></span></div></td></tr>
+<tr class="row group-row minyan-ashkenazi"><td class="group-cell" colspan="2"><div class="group-title">מנחה (יום שישי) <span class="group-label">(אשכנזי)</span>:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">13:00</span></span></div></td></tr>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">16:15</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:25</span> <span class="group-label">(ספרדי ואשכנזי)</span></span></div></td></tr>
+<tr class="row group-row minyan-sephardi"><td class="group-cell" colspan="2"><div class="group-title">ערבית - לאחר מנחה <span class="group-label">(ספרדי)</span></div></td></tr>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">ערבית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">17:05</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">19:15</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">20:15</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">21:15</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">22:15</span> <span class="group-label">(בית המדרש)</span></span></div></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2 class="card-header">זמני תפילות לשבת ומועד</h2>
+        <table class="schedule">
+          <tbody>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה ערב שבת:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">16:11</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:21</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">שחרית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">06:15</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:45</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:30</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
+<tr class="row group-row minyan-ashkenazi"><td class="group-cell" colspan="2"><div class="group-title">מנחה גדולה <span class="group-label">(אשכנזי)</span>:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">12:30</span></span></div></td></tr>
+<tr class="row group-row minyan-sephardi"><td class="group-cell" colspan="2"><div class="group-title">תהילים <span class="group-label">(ספרדי)</span>:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">14:30</span></span></div></td></tr>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">15:30</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:00</span> <span class="group-label">(ספרדי ואשכנזי)</span></span></div></td></tr>
+<tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">ערבית מוצ&quot;ש:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">17:07</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">17:15</span> <span class="group-label">(ספרדי ואשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">17:35</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2 class="card-header">זמני היום - עלי</h2>
+        <table class="schedule">
+          <tbody>
+<tr class="row"><td class="desc">עלות השחר</td><td class="time" dir="ltr">04:57</td></tr>
+<tr class="row"><td class="desc">זריחה</td><td class="time" dir="ltr">06:09</td></tr>
+<tr class="row"><td class="desc">חצות</td><td class="time" dir="ltr">11:23</td></tr>
+<tr class="row"><td class="desc">שקיעה</td><td class="time" dir="ltr">16:42</td></tr>
+<tr class="row"><td class="desc">צאת הכוכבים</td><td class="time" dir="ltr">17:01</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2 class="card-header">פרשת ויצא</h2>
+        <table class="schedule">
+          <tbody>
+<tr class="row"><td class="desc">הדלקת נרות</td><td class="time" dir="ltr">16:11</td></tr>
+<tr class="row"><td class="desc">מוצאי שבת</td><td class="time" dir="ltr">17:16</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2 class="card-header">לימוד יומי</h2>
+        <table class="schedule">
+          <tbody>
+<tr class="row"><td class="desc" colspan="2">בבלי: בכורות דף ס</td></tr>
+<tr class="row"><td class="desc" colspan="2">ירושלמי: סנהדרין דף כ״ט</td></tr>
+<tr class="row"><td class="desc" colspan="2">משניות: אהלות פרק י״ח משנה י&#x27;</td></tr>
+<tr class="row"><td class="desc" colspan="2">הלכה: שו״ע או״ח רצח ו-ח</td></tr>
+<tr class="row"><td class="desc" colspan="2">רמב&quot;ם: משנה תורה, ספר משפטים</td></tr>
+<tr class="row"><td class="desc" colspan="2">תהילים: ל״ט - מ״ג</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <footer class="footer">עודכן: ז&#x27; כסלו תשפ״ז 13:23</footer>
+  </div>
+</body>
+</html>
