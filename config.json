@@ -28,7 +28,7 @@
       "title": "#PARSHA",
       "rows": [
         ["#SHABBOS-30", "הדלקת נרות"],
-        ["#MOZASH+1", "#MOZASHTITLE"]
+        ["#MOZASH", "#MOZASHTITLE"]
       ]
     },
     {
@@ -57,7 +57,7 @@
   "chol_groups_exclude": [],
   "shabbos_groups_exclude": [
     ".*קבלת שבת.*",
-    ".*אילן.*"
+    ".*שיעור.*"
   ],
   "group_unmatched_order": "chronological",
   "group_no_suffix_label": "pattern",
