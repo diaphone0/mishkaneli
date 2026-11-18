@@ -1,0 +1,116 @@
+name: Update Prayer Times Board
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "combine_prayer_times.py"
+      - "fetch_prayer_times.py"
+      - "config.py"
+      - "config.json"
+      - ".github/workflows/update_board.yml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "update-prayer-board"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - name: Checkout mishkaneli repository
+        uses: actions/checkout@v4
+        with:
+          path: site
+
+      - name: Checkout shul-luah libraries (pyzmanim + tagging)
+        uses: actions/checkout@v4
+        with:
+          repository: diaphone0/shul-luah
+          path: shul-luah
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "site/requirements.txt"
+
+      - name: Install dependencies
+        run: python -m pip install -r site/requirements.txt
+
+      - name: Render unified HTML report
+        env:
+          MYGABAY_SEPHARDI_URL: ${{ secrets.MYGABAY_SEPHARDI_URL }}
+          MYGABAY_ASHKENAZI_URL: ${{ secrets.MYGABAY_ASHKENAZI_URL }}
+        run: |
+          extra_flags="--skip-if-unchanged"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            extra_flags=""
+          fi
+          python site/combine_prayer_times.py \
+            --config site/config.json \
+            --luah-suite-path "$GITHUB_WORKSPACE/shul-luah" \
+            --only-combined-html \
+            $extra_flags \
+            --html-out site/index.html
+
+      - name: Commit index.html if content changed
+        id: check
+        run: |
+          cd site
+          if [ -n "$(git status --porcelain index.html)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git commit -m "Auto-update prayer times board"
+            git pull --rebase
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stage static Pages bundle
+        if: steps.check.outputs.deploy == 'true'
+        run: |
+          mkdir -p _public
+          cp site/index.html _public/index.html
+          if [ -f site/CNAME ]; then
+            cp site/CNAME _public/CNAME
+          fi
+
+      - name: Upload GitHub Pages artifact
+        if: steps.check.outputs.deploy == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _public
+
+  deploy:
+    if: needs.build.outputs.deploy == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

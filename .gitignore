@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Keep secrets and scratch outputs out of public repository
+.env
+.env.*
+secrets.json
+*.json
+!config.json
+!config.example.json
+!secrets.example.json
+*.html
+!index.html

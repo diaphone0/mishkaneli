@@ -1,0 +1,70 @@
+{
+  "luah_suite_path": "..",
+  "location": {
+    "latitude": 32.06,
+    "longitude": 35.26,
+    "elevation": 720
+  },
+  "eretz_yisroel": true,
+  "timezone": "Asia/Jerusalem",
+  "no_suffix_patterns": [
+    ".*בית המדרש.*"
+  ],
+  "report_title": "משכן עלי - זמני תפילה",
+  "report_subtitle": "#HEBDATE#DAYINFO:n​",
+  "report_footer": "עודכן: #HEBDATE #DICLOCK",
+  "extra_tables": [
+    {
+      "title": "זמני היום - עלי",
+      "rows": [
+        ["#ALOS72", "עלות השחר"],
+        ["#SUNRISE", "זריחה"],
+        ["#CHAZOT", "חצות"],
+        ["#SUNSET", "שקיעה"],
+        ["#TZAISYESHIVA", "צאת הכוכבים"]
+      ]
+    },
+    {
+      "title": "#PARSHA",
+      "rows": [
+        ["#SHABBOS-30", "הדלקת נרות"],
+        ["#MOZASH+1", "#MOZASHTITLE"]
+      ]
+    },
+    {
+      "title": "לימוד יומי",
+      "rows": [
+        ["", "בבלי: #DAFYOMIBV"],
+        ["", "ירושלמי: #DAFYOMIYR"],
+        ["", "משניות: #MISHNA"],
+        ["", "הלכה: #HALACHA"],
+        ["", "רמב\"ם: #RAMBAM"],
+        ["", "תהילים: #TEHILIM"]
+      ]
+    }
+  ],
+  "chol_groups": [
+    ["שחרית:", ".*שחרית.*"],
+    ["מנחה:", "^(?!.*(?:ערבית|שישי)).*(?:מנחה|אשרי).*"],
+    ["ערבית:", ".*ערבית.*"]
+  ],
+  "shabbos_groups": [
+    ["מנחה ערב שבת:", ".*ערב שבת.*"],
+    ["שחרית:", ".*(?:שחרית|מנין).*"],
+    ["מנחה:", "^(?!.*(?:ערב שבת|גדולה)).*מנחה.*"],
+    ["ערבית מוצ\"ש:", ".*ערבית.*"]
+  ],
+  "chol_groups_exclude": [],
+  "shabbos_groups_exclude": [
+    ".*קבלת שבת.*",
+    ".*אילן.*"
+  ],
+  "group_unmatched_order": "chronological",
+  "group_no_suffix_label": "pattern",
+  "sephardi_label": "ספרדי",
+  "ashkenazi_label": "אשכנזי",
+  "suffix_desc": true,
+  "order": "chronological",
+  "generate_html": true
+}
+

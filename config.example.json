@@ -1,0 +1,37 @@
+{
+  "_comment": "Copy this file to config.json (in the same directory) to customize combine_prayer_times.py without passing CLI flags on every run. CLI flags take precedence over config.json when explicitly provided.",
+  "_comment_patterns": "no_suffix_patterns is a list of regex strings (or a single string). Any prayer row whose original 'desc' matches one of these regexes will NOT have '(ספרדי)' / '(אשכנזי)' appended.",
+  "_comment_headers": "report_title, report_subtitle, and report_footer customize the HTML report header and footer. Leave null to use the default values (shul_name / page_date / last-updated timestamp), set to a non-empty string to override (supports luah #TAGs such as '#HEBDATE', '#PARSHA', '#SHABBOS-30' when luah_suite_path is configured, plus '{updated_at}' in report_footer), or set to '' (empty string) to hide.",
+  "_comment_luah_libs": "luah_suite_path points to the shul-luah root folder ('..' relative to mg_sync/) containing 'pyzmanim-lib/' and 'luah_signage/'. You can also override pyzmanim_lib_path / luah_signage_path individually. If left null or not found on disk, #TAGs in report_* fields and extra_tables are left untouched as-is.",
+  "_comment_extra_tables": "extra_tables optionally appends custom cards to the HTML reports: [{\"title\": \"זמני היום — #PARSHA\", \"rows\": [[\"#SUNRISE\", \"הנץ החמה\"], [\"#SUNSET\", \"שקיעה\"], [\"\", \"#MOLAD\"]]}]. Titles, times, and descriptions all support #TAGs. Each table also accepts an optional \"mode\": \"all\" (default) | \"both\" | \"chol\" | \"shabbos\".",
+  "_comment_groups": "chol_groups and shabbos_groups collapse matching timed rows in the HTML report into compact comma-separated lists: [[\"שחרית:\", \".*שחרית.*\"], [\"מנחה:\", \"^(?!.*(?:ערבית|שישי)).*(?:מנחה|אשרי).*\"]]. group_unmatched_order controls unmatched rows ('chronological' keeps them in place; 'below' places them below all matched groups). group_no_suffix_label controls labels on grouped rows that matched no_suffix_patterns: 'pattern' trims regex signs from the matched pattern (e.g. '.*המדרש.*' -> '20:15 (המדרש)'), null/'' omits the label ('20:15'), 'minyan' keeps the minyan label, or any custom string uses that fixed label.",
+  "luah_suite_path": "..",
+  "pyzmanim_lib_path": null,
+  "luah_signage_path": null,
+  "location": {
+    "latitude": 32.06,
+    "longitude": 35.26,
+    "elevation": 720
+  },
+  "eretz_yisroel": true,
+  "timezone": "Asia/Jerusalem",
+  "no_suffix_patterns": [
+    ".*המדרש.*"
+  ],
+  "report_title": null,
+  "report_subtitle": null,
+  "report_footer": null,
+  "extra_tables": [],
+  "chol_groups": [],
+  "shabbos_groups": [],
+  "chol_groups_exclude": [],
+  "shabbos_groups_exclude": [],
+  "group_unmatched_order": "chronological",
+  "group_no_suffix_label": "pattern",
+  "sephardi_label": "ספרדי",
+  "ashkenazi_label": "אשכנזי",
+  "suffix_desc": true,
+  "order": "chronological",
+  "generate_html": true
+}
+
