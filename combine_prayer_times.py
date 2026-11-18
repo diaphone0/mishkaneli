@@ -1350,9 +1350,11 @@ _FOOTER_BLOCK_RE = re.compile(r'\s*<footer class="footer">.*?</footer>', re.DOTA
 
 
 def strip_html_footer(html_doc: str) -> str:
-    """Returns ``html_doc`` with ``<footer class="footer">...</footer>`` stripped,
-    allowing content comparison that ignores footer-only timestamp changes."""
-    return _FOOTER_BLOCK_RE.sub("", html_doc)
+    """Returns ``html_doc`` with ``<footer class="footer">...</footer>`` stripped
+    and line endings normalized, allowing content comparison that ignores
+    footer-only timestamp changes."""
+    normalized = html_doc.replace("\r\n", "\n")
+    return _FOOTER_BLOCK_RE.sub("", normalized).strip()
 
 
 def html_has_meaningful_changes(existing_html: str, new_html: str) -> bool:
