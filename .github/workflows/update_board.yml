@@ -60,7 +60,7 @@ jobs:
         run: |
           mkdir -p _public
 
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
             if curl -fsSL --retry 2 --max-time 15 https://mishkaneli.org/ -o _public/index.html; then
               before_hash="$(sha256sum _public/index.html | awk '{print $1}')"
             else
