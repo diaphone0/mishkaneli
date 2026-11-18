@@ -1,10 +1,13 @@
 name: Update Prayer Times Board
 
 on:
-  schedule:
-    # Off-peak minutes (~22 min apart: :07, :29, :51) to avoid GitHub's :00/:15/:30/:45 queue drops
-    - cron: "7,29,51 * * * *"
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: "Force deploy to GitHub Pages even if content did not change"
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -57,10 +60,11 @@ jobs:
         env:
           MYGABAY_SEPHARDI_URL: ${{ secrets.MYGABAY_SEPHARDI_URL }}
           MYGABAY_ASHKENAZI_URL: ${{ secrets.MYGABAY_ASHKENAZI_URL }}
+          FORCE_DEPLOY: ${{ inputs.force_deploy }}
         run: |
           mkdir -p _public
 
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+          if [ "$FORCE_DEPLOY" != "true" ]; then
             if curl -fsSL --retry 2 --max-time 15 https://mishkaneli.org/ -o _public/index.html; then
               before_hash="$(sha256sum _public/index.html | awk '{print $1}')"
             else
@@ -84,6 +88,7 @@ jobs:
               echo "deploy=false" >> "$GITHUB_OUTPUT"
             fi
           else
+            echo "Force deploy requested — rendering and deploying unconditionally."
             python site/combine_prayer_times.py \
               --config site/config.json \
               --luah-suite-path "$GITHUB_WORKSPACE/shul-luah" \
