@@ -1058,6 +1058,16 @@ def render_html_report(
     page_date = html_lib.escape(raw_subtitle)
     updated_at = html_lib.escape(_format_updated_at(str(payload.get("fetched_at") or "")))
 
+    has_chol_toggle = mode in ("both", "chol") and bool(chol_groups or chol_groups_exclude)
+    has_shabbos_toggle = mode in ("both", "shabbos") and bool(shabbos_groups or shabbos_groups_exclude)
+    has_view_toggle = has_chol_toggle or has_shabbos_toggle
+    card_toggle_html = (
+        '<div class="view-toggle" role="group" aria-label="תצוגת לוח">'
+        '<button type="button" class="toggle-btn active" data-view="compact" aria-pressed="true">מקוצר</button>'
+        '<button type="button" class="toggle-btn" data-view="full" aria-pressed="false">מפורט</button>'
+        "</div>"
+    )
+
     sections_html: list[str] = []
     if mode in ("both", "chol"):
         weekday_rows_html = _render_html_rows(
@@ -1072,13 +1082,36 @@ def render_html_report(
             suffix_desc=suffix_desc,
             tag_renderer=tag_renderer,
         )
-        sections_html.append(
-            f"""      <section class="card">
-        <h2 class="card-header">זמני תפילות לימי חול</h2>
-        <table class="schedule">
-          <tbody>
+        if has_chol_toggle:
+            weekday_full_rows_html = _render_html_rows(
+                payload.get("weekday", []),
+                groups=None,
+                exclude_patterns=None,
+                sephardi_label=sephardi_label,
+                ashkenazi_label=ashkenazi_label,
+                suffix_desc=suffix_desc,
+                tag_renderer=tag_renderer,
+            )
+            weekday_header_html = (
+                f'<h2 class="card-header has-toggle">'
+                f'<span class="card-title">זמני תפילות לימי חול</span>{card_toggle_html}</h2>'
+            )
+            weekday_table_body = f"""          <tbody class="view-compact">
 {weekday_rows_html}
           </tbody>
+          <tbody class="view-full" hidden>
+{weekday_full_rows_html}
+          </tbody>"""
+        else:
+            weekday_header_html = '<h2 class="card-header">זמני תפילות לימי חול</h2>'
+            weekday_table_body = f"""          <tbody>
+{weekday_rows_html}
+          </tbody>"""
+        sections_html.append(
+            f"""      <section class="card">
+        {weekday_header_html}
+        <table class="schedule">
+{weekday_table_body}
         </table>
       </section>"""
         )
@@ -1095,13 +1128,36 @@ def render_html_report(
             suffix_desc=suffix_desc,
             tag_renderer=tag_renderer,
         )
-        sections_html.append(
-            f"""      <section class="card">
-        <h2 class="card-header">זמני תפילות לשבת ומועד</h2>
-        <table class="schedule">
-          <tbody>
+        if has_shabbos_toggle:
+            shabbos_full_rows_html = _render_html_rows(
+                payload.get("shabbos", []),
+                groups=None,
+                exclude_patterns=None,
+                sephardi_label=sephardi_label,
+                ashkenazi_label=ashkenazi_label,
+                suffix_desc=suffix_desc,
+                tag_renderer=tag_renderer,
+            )
+            shabbos_header_html = (
+                f'<h2 class="card-header has-toggle">'
+                f'<span class="card-title">זמני תפילות לשבת ומועד</span>{card_toggle_html}</h2>'
+            )
+            shabbos_table_body = f"""          <tbody class="view-compact">
 {shabbos_rows_html}
           </tbody>
+          <tbody class="view-full" hidden>
+{shabbos_full_rows_html}
+          </tbody>"""
+        else:
+            shabbos_header_html = '<h2 class="card-header">זמני תפילות לשבת ומועד</h2>'
+            shabbos_table_body = f"""          <tbody>
+{shabbos_rows_html}
+          </tbody>"""
+        sections_html.append(
+            f"""      <section class="card">
+        {shabbos_header_html}
+        <table class="schedule">
+{shabbos_table_body}
         </table>
       </section>"""
         )
@@ -1141,6 +1197,41 @@ def render_html_report(
     </header>"""
     else:
         banner_html = ""
+
+    script_html = (
+        """\n  <script>
+    (function () {
+      var toggles = document.querySelectorAll(".view-toggle");
+      for (var t = 0; t < toggles.length; t++) {
+        (function (toggle) {
+          var card = toggle.closest(".card");
+          if (!card) return;
+          var buttons = toggle.querySelectorAll(".toggle-btn");
+          var compactBody = card.querySelector("tbody.view-compact");
+          var fullBody = card.querySelector("tbody.view-full");
+          function setView(view) {
+            var isFull = view === "full";
+            card.classList.toggle("show-full", isFull);
+            if (compactBody) compactBody.hidden = isFull;
+            if (fullBody) fullBody.hidden = !isFull;
+            for (var k = 0; k < buttons.length; k++) {
+              var active = buttons[k].getAttribute("data-view") === view;
+              buttons[k].classList.toggle("active", active);
+              buttons[k].setAttribute("aria-pressed", active ? "true" : "false");
+            }
+          }
+          for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", function () {
+              setView(this.getAttribute("data-view"));
+            });
+          }
+        })(toggles[t]);
+      }
+    })();
+  </script>"""
+        if has_view_toggle
+        else ""
+    )
 
     if report_footer is None:
         footer_html = (
@@ -1247,6 +1338,54 @@ def render_html_report(
       text-align: center;
       white-space: pre-line;
     }}
+    .card-header.has-toggle {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 14px;
+    }}
+    .card-header .card-title {{
+      flex: 1;
+      text-align: center;
+    }}
+    .view-toggle {{
+      display: inline-flex;
+      flex-shrink: 0;
+      padding: 2px;
+      background: #e8eef9;
+      border: 1px solid #d0dcf0;
+      border-radius: 999px;
+      gap: 2px;
+    }}
+    .toggle-btn {{
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      line-height: 1.2;
+      padding: 3px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }}
+    .toggle-btn:hover {{
+      color: var(--time-text);
+    }}
+    .toggle-btn.active {{
+      background: var(--time-text);
+      color: #ffffff;
+      font-weight: 700;
+    }}
+    .card.show-full tbody.view-compact {{
+      display: none;
+    }}
+    .card:not(.show-full) tbody.view-full {{
+      display: none;
+    }}
     table.schedule {{
       width: 100%;
       border-collapse: collapse;
@@ -1327,6 +1466,7 @@ def render_html_report(
     @media print {{
       body {{ background: #ffffff; padding: 0; }}
       .banner, .card {{ box-shadow: none; }}
+      .view-toggle {{ display: none; }}
       .grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
       .grid.single {{ grid-template-columns: 1fr; }}
       tr.row td {{ padding: 6px 12px; font-size: 0.95rem; }}
@@ -1340,7 +1480,7 @@ def render_html_report(
 {cards_joined}
     </main>
     {footer_html}
-  </div>
+  </div>{script_html}
 </body>
 </html>
 """

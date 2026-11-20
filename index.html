@@ -86,6 +86,54 @@
       text-align: center;
       white-space: pre-line;
     }
+    .card-header.has-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 14px;
+    }
+    .card-header .card-title {
+      flex: 1;
+      text-align: center;
+    }
+    .view-toggle {
+      display: inline-flex;
+      flex-shrink: 0;
+      padding: 2px;
+      background: #e8eef9;
+      border: 1px solid #d0dcf0;
+      border-radius: 999px;
+      gap: 2px;
+    }
+    .toggle-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 600;
+      line-height: 1.2;
+      padding: 3px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .toggle-btn:hover {
+      color: var(--time-text);
+    }
+    .toggle-btn.active {
+      background: var(--time-text);
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .card.show-full tbody.view-compact {
+      display: none;
+    }
+    .card:not(.show-full) tbody.view-full {
+      display: none;
+    }
     table.schedule {
       width: 100%;
       border-collapse: collapse;
@@ -166,6 +214,7 @@
     @media print {
       body { background: #ffffff; padding: 0; }
       .banner, .card { box-shadow: none; }
+      .view-toggle { display: none; }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
       .grid.single { grid-template-columns: 1fr; }
       tr.row td { padding: 6px 12px; font-size: 0.95rem; }
@@ -176,25 +225,43 @@
   <div class="container">
     <header class="banner">
       <h1>משכן עלי - זמני תפילה</h1>
-      <div class="subtitle">ח&#x27; כסלו תשפ״ז​</div>
+      <div class="subtitle">י&#x27; כסלו תשפ״ז​</div>
     </header>
     <main class="grid">
       <section class="card">
-        <h2 class="card-header">זמני תפילות לימי חול</h2>
+        <h2 class="card-header has-toggle"><span class="card-title">זמני תפילות לימי חול</span><div class="view-toggle" role="group" aria-label="תצוגת לוח"><button type="button" class="toggle-btn active" data-view="compact" aria-pressed="true">מקוצר</button><button type="button" class="toggle-btn" data-view="full" aria-pressed="false">מפורט</button></div></h2>
         <table class="schedule">
-          <tbody>
+          <tbody class="view-compact">
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">שחרית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">06:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">06:30</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:30</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:00</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:30</span> <span class="group-label">(ספרדי)</span></span></div></td></tr>
 <tr class="row group-row minyan-ashkenazi"><td class="group-cell" colspan="2"><div class="group-title">מנחה (יום שישי) <span class="group-label">(אשכנזי)</span>:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">13:00</span></span></div></td></tr>
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">16:15</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:25</span> <span class="group-label">(ספרדי ואשכנזי)</span></span></div></td></tr>
 <tr class="row group-row minyan-sephardi"><td class="group-cell" colspan="2"><div class="group-title">ערבית - לאחר מנחה <span class="group-label">(ספרדי)</span></div></td></tr>
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">ערבית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">17:05</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">19:15</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">20:15</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">21:15</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">22:15</span> <span class="group-label">(בית המדרש)</span></span></div></td></tr>
           </tbody>
+          <tbody class="view-full" hidden>
+<tr class="row minyan-ashkenazi"><td class="desc">שחרית (אשכנזי)</td><td class="time" dir="ltr">06:00</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שחרית (ספרדי)</td><td class="time" dir="ltr">06:30</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">שחרית (אשכנזי)</td><td class="time" dir="ltr">07:00</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שחרית (ספרדי)</td><td class="time" dir="ltr">07:30</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">שחרית (אשכנזי)</td><td class="time" dir="ltr">08:00</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שחרית (ספרדי)</td><td class="time" dir="ltr">08:30</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה (יום שישי) (אשכנזי)</td><td class="time" dir="ltr">13:00</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">מנחה - פתח אליהו (ספרדי)</td><td class="time" dir="ltr">16:15</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">אשרי (ספרדי)</td><td class="time" dir="ltr">16:25</td></tr>
+<tr class="row sub-row minyan-sephardi"><td class="desc" colspan="2">ערבית - לאחר מנחה (ספרדי)</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה (אשכנזי)</td><td class="time" dir="ltr">16:25</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית (אשכנזי)</td><td class="time" dir="ltr">17:05</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית (אשכנזי)</td><td class="time" dir="ltr">19:15</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית בבית המדרש</td><td class="time" dir="ltr">20:15</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית בבית המדרש</td><td class="time" dir="ltr">21:15</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית בבית המדרש</td><td class="time" dir="ltr">22:15</td></tr>
+          </tbody>
         </table>
       </section>
       <section class="card">
-        <h2 class="card-header">זמני תפילות לשבת ומועד</h2>
+        <h2 class="card-header has-toggle"><span class="card-title">זמני תפילות לשבת ומועד</span><div class="view-toggle" role="group" aria-label="תצוגת לוח"><button type="button" class="toggle-btn active" data-view="compact" aria-pressed="true">מקוצר</button><button type="button" class="toggle-btn" data-view="full" aria-pressed="false">מפורט</button></div></h2>
         <table class="schedule">
-          <tbody>
+          <tbody class="view-compact">
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה ערב שבת:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">16:11</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:21</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">שחרית:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">06:15</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">07:45</span> <span class="group-label">(ספרדי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">08:30</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
 <tr class="row group-row minyan-ashkenazi"><td class="group-cell" colspan="2"><div class="group-title">מנחה גדולה <span class="group-label">(אשכנזי)</span>:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">12:30</span></span></div></td></tr>
@@ -202,17 +269,36 @@
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">מנחה:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">15:30</span> <span class="group-label">(אשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">16:00</span> <span class="group-label">(ספרדי ואשכנזי)</span></span></div></td></tr>
 <tr class="row group-row"><td class="group-cell" colspan="2"><div class="group-title">ערבית מוצ&quot;ש:</div><div class="group-times"><span class="group-item"><span class="group-time" dir="ltr">17:07</span> <span class="group-label">(בית המדרש)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">17:15</span> <span class="group-label">(ספרדי ואשכנזי)</span>,</span> <span class="group-item"><span class="group-time" dir="ltr">17:35</span> <span class="group-label">(אשכנזי)</span></span></div></td></tr>
           </tbody>
+          <tbody class="view-full" hidden>
+<tr class="row minyan-sephardi"><td class="desc">מנחה ערב שבת (ספרדי)</td><td class="time" dir="ltr">16:11</td></tr>
+<tr class="row sub-row minyan-sephardi"><td class="desc" colspan="2">קבלת שבת (ספרדי)</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה ערב שבת וקבלת שבת (אשכנזי)</td><td class="time" dir="ltr">16:21</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנין ראשון (אשכנזי)</td><td class="time" dir="ltr">06:15</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שחרית (ספרדי)</td><td class="time" dir="ltr">07:45</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנין מרכזי (אשכנזי)</td><td class="time" dir="ltr">08:30</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שיעור - הרב אילן (ספרדי)</td><td class="time" dir="ltr">10:20</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה גדולה (אשכנזי)</td><td class="time" dir="ltr">12:30</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">תהילים (ספרדי)</td><td class="time" dir="ltr">14:30</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">שיעור - הרב אילן (ספרדי)</td><td class="time" dir="ltr">15:00</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה קטנה ראשונה (אשכנזי)</td><td class="time" dir="ltr">15:30</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">מנחה (ספרדי)</td><td class="time" dir="ltr">16:00</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">מנחה קטנה שניה (אשכנזי)</td><td class="time" dir="ltr">16:00</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית מוקדמת בבית המדרש</td><td class="time" dir="ltr">17:07</td></tr>
+<tr class="row minyan-sephardi"><td class="desc">ערבית צאת שבת (ספרדי)</td><td class="time" dir="ltr">17:15</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית בצאת השבת (אשכנזי)</td><td class="time" dir="ltr">17:15</td></tr>
+<tr class="row minyan-ashkenazi"><td class="desc">ערבית מאוחרת (אשכנזי)</td><td class="time" dir="ltr">17:35</td></tr>
+          </tbody>
         </table>
       </section>
       <section class="card">
         <h2 class="card-header">זמני היום - עלי</h2>
         <table class="schedule">
           <tbody>
-<tr class="row"><td class="desc">עלות השחר</td><td class="time" dir="ltr">04:58</td></tr>
-<tr class="row"><td class="desc">זריחה</td><td class="time" dir="ltr">06:10</td></tr>
-<tr class="row"><td class="desc">חצות</td><td class="time" dir="ltr">11:23</td></tr>
-<tr class="row"><td class="desc">שקיעה</td><td class="time" dir="ltr">16:42</td></tr>
-<tr class="row"><td class="desc">צאת הכוכבים</td><td class="time" dir="ltr">17:01</td></tr>
+<tr class="row"><td class="desc">עלות השחר</td><td class="time" dir="ltr">04:59</td></tr>
+<tr class="row"><td class="desc">זריחה</td><td class="time" dir="ltr">06:11</td></tr>
+<tr class="row"><td class="desc">חצות</td><td class="time" dir="ltr">11:24</td></tr>
+<tr class="row"><td class="desc">שקיעה</td><td class="time" dir="ltr">16:41</td></tr>
+<tr class="row"><td class="desc">צאת הכוכבים</td><td class="time" dir="ltr">17:00</td></tr>
           </tbody>
         </table>
       </section>
@@ -229,17 +315,47 @@
         <h2 class="card-header">לימוד יומי</h2>
         <table class="schedule">
           <tbody>
-<tr class="row"><td class="desc" colspan="2">בבלי: בכורות דף ס״א</td></tr>
-<tr class="row"><td class="desc" colspan="2">ירושלמי: סנהדרין דף ל</td></tr>
-<tr class="row"><td class="desc" colspan="2">משניות: נגעים פרק א&#x27; משנה ב&#x27;</td></tr>
-<tr class="row"><td class="desc" colspan="2">הלכה: שו״ע או״ח רצח ט-יא</td></tr>
-<tr class="row"><td class="desc" colspan="2">רמב&quot;ם: הלכות שכירות, פרק רביעי</td></tr>
-<tr class="row"><td class="desc" colspan="2">תהילים: מ״ד - מ״ח</td></tr>
+<tr class="row"><td class="desc" colspan="2">בבלי: ערכין דף ג&#x27;</td></tr>
+<tr class="row"><td class="desc" colspan="2">ירושלמי: סנהדרין דף ל״ב</td></tr>
+<tr class="row"><td class="desc" colspan="2">משניות: נגעים פרק א&#x27; משנה ו&#x27;</td></tr>
+<tr class="row"><td class="desc" colspan="2">הלכה: שו״ע או״ח רצח-ט טו-ב</td></tr>
+<tr class="row"><td class="desc" colspan="2">רמב&quot;ם: הלכות שכירות, פרק עשירי</td></tr>
+<tr class="row"><td class="desc" colspan="2">תהילים: נ״ה - נ״ט</td></tr>
           </tbody>
         </table>
       </section>
     </main>
-    <footer class="footer">עודכן: ח&#x27; כסלו תשפ״ז 14:11</footer>
+    <footer class="footer">עודכן: י&#x27; כסלו תשפ״ז 14:59</footer>
   </div>
+  <script>
+    (function () {
+      var toggles = document.querySelectorAll(".view-toggle");
+      for (var t = 0; t < toggles.length; t++) {
+        (function (toggle) {
+          var card = toggle.closest(".card");
+          if (!card) return;
+          var buttons = toggle.querySelectorAll(".toggle-btn");
+          var compactBody = card.querySelector("tbody.view-compact");
+          var fullBody = card.querySelector("tbody.view-full");
+          function setView(view) {
+            var isFull = view === "full";
+            card.classList.toggle("show-full", isFull);
+            if (compactBody) compactBody.hidden = isFull;
+            if (fullBody) fullBody.hidden = !isFull;
+            for (var k = 0; k < buttons.length; k++) {
+              var active = buttons[k].getAttribute("data-view") === view;
+              buttons[k].classList.toggle("active", active);
+              buttons[k].setAttribute("aria-pressed", active ? "true" : "false");
+            }
+          }
+          for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", function () {
+              setView(this.getAttribute("data-view"));
+            });
+          }
+        })(toggles[t]);
+      }
+    })();
+  </script>
 </body>
 </html>

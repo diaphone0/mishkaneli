@@ -562,17 +562,33 @@ class CombinePrayerTimesTests(unittest.TestCase):
             shabbos_groups_exclude=[r".*קבלת שבת.*", r".*אילן.*"],
             extra_tables=[{"title": "זמני היום", "rows": [["06:09", "זריחה"]]}],
         )
-        self.assertIn("מנחה ערב שבת:</div>", doc_shabbos_ex)
-        self.assertIn("16:15", doc_shabbos_ex)
-        self.assertIn("16:21", doc_shabbos_ex)
-        self.assertNotIn("קבלת שבת (ספרדי)", doc_shabbos_ex)
-        self.assertNotIn("אילן", doc_shabbos_ex)
+        compact_start = doc_shabbos_ex.index('<tbody class="view-compact">')
+        full_start = doc_shabbos_ex.index('<tbody class="view-full" hidden>')
+        compact_section = doc_shabbos_ex[compact_start:full_start]
+        full_section = doc_shabbos_ex[full_start:]
+
+        self.assertIn("מנחה ערב שבת:</div>", compact_section)
+        self.assertIn("16:15", compact_section)
+        self.assertIn("16:21", compact_section)
+        self.assertNotIn("קבלת שבת (ספרדי)", compact_section)
+        self.assertNotIn("אילן", compact_section)
+
+        # Full ("מורחב") section embeds all ungrouped and excluded rows:
+        self.assertIn("קבלת שבת (ספרדי)", full_section)
+        self.assertIn("שיעור - הרב אילן (ספרדי)", full_section)
+        self.assertIn("מנחה ערב שבת וקבלת שבת (אשכנזי)", full_section)
+
+        # Toggle buttons ("מקוצר" active by default, "מפורט" inactive) and script are present:
+        self.assertIn('data-view="compact" aria-pressed="true">מקוצר</button>', doc_shabbos_ex)
+        self.assertIn('data-view="full" aria-pressed="false">מפורט</button>', doc_shabbos_ex)
+        self.assertIn("function setView(view)", doc_shabbos_ex)
+
         # Ungrouped board row stacks time on a newline with non-bold label and trailing ':' when grouping is enabled:
         self.assertIn(
             '<div class="group-title">מנחה גדולה <span class="group-label">(ספרדי)</span>:</div>'
             '<div class="group-times"><span class="group-item">'
             '<span class="group-time" dir="ltr">12:30</span></span></div>',
-            doc_shabbos_ex,
+            compact_section,
         )
         # Extra tables remain 2-column (unaffected by board grouping):
         self.assertIn(
