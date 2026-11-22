@@ -104,6 +104,13 @@ jobs:
             cp site/CNAME _public/CNAME
           fi
 
+      - name: Add static preview to Pages bundle
+        if: steps.render.outputs.deploy == 'true'
+        run: |
+          if [ -d site/preview ]; then
+            cp -r site/preview _public/preview
+          fi
+
       - name: Upload GitHub Pages artifact
         if: steps.render.outputs.deploy == 'true'
         uses: actions/upload-pages-artifact@v3
