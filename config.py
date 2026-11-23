@@ -22,6 +22,7 @@ DEFAULT_ASHKENAZI_LABEL = "אשכנזי"
 VALID_ORDERS = ("chronological", "time", "concat")
 VALID_EXTRA_TABLE_MODES = ("all", "both", "chol", "shabbos")
 VALID_GROUP_UNMATCHED_ORDERS = ("chronological", "below")
+VALID_SINGLE_ROW_LABEL_STYLES = ("inline", "below_time", "below_all")
 
 
 @dataclass
@@ -105,7 +106,11 @@ class CombineConfig:
     suffix_desc: bool = True
     order: str = "chronological"
     generate_html: bool = True
-
+    # Minutes after a time passes before the compact weekday view grays it out.
+    gray_past_after_minutes: float = 5
+    # Minyan label of ungrouped single-row entries: "inline" (in the title, with parentheses),
+    # "below_time" (under the time, timed entries only), "below_all" (also under no-time titles).
+    single_row_label_style: str = "inline"
     # Directory used to resolve relative paths inside this config (defaults to mg_sync/).
     base_dir: Path = field(default_factory=lambda: HERE, repr=False, compare=False)
 
@@ -353,6 +358,21 @@ def combine_config_from_dict(
     if not isinstance(generate_html, bool):
         raise ValueError(f"{source}: 'generate_html' must be a boolean")
 
+    gray_past_after_minutes = data.get("gray_past_after_minutes", 5)
+    if (
+        isinstance(gray_past_after_minutes, bool)
+        or not isinstance(gray_past_after_minutes, (int, float))
+        or gray_past_after_minutes < 0
+    ):
+        raise ValueError(f"{source}: 'gray_past_after_minutes' must be a non-negative number")
+
+    single_row_label_style = data.get("single_row_label_style", "inline")
+    if single_row_label_style not in VALID_SINGLE_ROW_LABEL_STYLES:
+        raise ValueError(
+            f"{source}: 'single_row_label_style' must be one of {VALID_SINGLE_ROW_LABEL_STYLES}, "
+            f"got {single_row_label_style!r}"
+        )
+
     return CombineConfig(
         no_suffix_patterns=patterns,
         report_title=report_title,
@@ -376,6 +396,8 @@ def combine_config_from_dict(
         suffix_desc=suffix_desc,
         order=order,
         generate_html=generate_html,
+        gray_past_after_minutes=gray_past_after_minutes,
+        single_row_label_style=single_row_label_style,
         base_dir=base_dir if base_dir is not None else HERE,
     )
 

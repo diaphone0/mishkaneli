@@ -469,23 +469,23 @@ class CombinePrayerTimesTests(unittest.TestCase):
         )
         self.assertIn('<div class="group-title">שחרית:</div>', doc_chrono)
         self.assertIn(
-            '<span class="group-time" dir="ltr">06:00</span> <span class="group-label">(אשכנזי)</span>,',
+            '<span class="group-time" dir="ltr">06:00</span><span class="group-label">אשכנזי</span></span>',
             doc_chrono,
         )
         self.assertIn(
-            '<span class="group-time" dir="ltr">06:30</span> <span class="group-label">(ספרדי)</span>',
+            '<span class="group-time" dir="ltr">06:30</span><span class="group-label">ספרדי</span>',
             doc_chrono,
         )
-        # 16:25 merges Sephardi ("אשרי") + Ashkenazi ("מנחה") into "(ספרדי ואשכנזי)"
+        # 16:25 merges Sephardi ("אשרי") + Ashkenazi ("מנחה") into "ספרדי ואשכנזי"
         self.assertIn(
-            '<span class="group-time" dir="ltr">16:15</span> <span class="group-label">(ספרדי)</span>,</span> '
-            '<span class="group-item"><span class="group-time" dir="ltr">16:25</span> '
-            '<span class="group-label">(ספרדי ואשכנזי)</span></span>',
+            '<span class="group-time" dir="ltr">16:15</span><span class="group-label">ספרדי</span></span> '
+            '<span class="group-item"><span class="group-time" dir="ltr">16:25</span>'
+            '<span class="group-label">ספרדי ואשכנזי</span></span>',
             doc_chrono,
         )
-        # ".*המדרש.*" trims to "(המדרש)"
+        # ".*המדרש.*" trims to "המדרש"
         self.assertIn(
-            '<span class="group-time" dir="ltr">20:15</span> <span class="group-label">(המדרש)</span>',
+            '<span class="group-time" dir="ltr">20:15</span><span class="group-label">המדרש</span>',
             doc_chrono,
         )
         # Ungrouped timeless row uses .group-title + non-bold .group-label WITHOUT trailing ':'
@@ -516,7 +516,7 @@ class CombinePrayerTimesTests(unittest.TestCase):
             '<span class="group-item"><span class="group-time" dir="ltr">20:15</span></span>',
             doc_below_nolabel,
         )
-        self.assertNotIn("(המדרש)", doc_below_nolabel)
+        self.assertNotIn('<span class="group-label">המדרש</span>', doc_below_nolabel)
         self.assertTrue(
             doc_below_nolabel.index("ערבית:</div>")
             < doc_below_nolabel.index("מנחה (יום שישי)")
@@ -532,7 +532,7 @@ class CombinePrayerTimesTests(unittest.TestCase):
             no_suffix_patterns=[r".*המדרש.*"],
         )
         self.assertIn(
-            '<span class="group-time" dir="ltr">20:15</span> <span class="group-label">(בית המדרש)</span>',
+            '<span class="group-time" dir="ltr">20:15</span><span class="group-label">בית המדרש</span>',
             doc_fixed,
         )
 
@@ -595,6 +595,35 @@ class CombinePrayerTimesTests(unittest.TestCase):
             '<tr class="row"><td class="desc">זריחה</td><td class="time" dir="ltr">06:09</td></tr>',
             doc_shabbos_ex,
         )
+
+    def test_single_row_label_styles(self) -> None:
+        timed = {"desc": "מנחה גדולה (ספרדי)", "time": "12:30", "minyan": "sephardi"}
+        timeless = {"desc": "ערבית - לאחר מנחה (ספרדי)", "time": "", "minyan": "sephardi"}
+        below_label = '<span class="group-label">ספרדי</span>'
+        inline_label = '<span class="group-label">(ספרדי)</span>'
+
+        def render(row: dict, style: str) -> str:
+            return cpt._render_single_schedule_tr(row, stack_time_on_newline=True, label_style=style)
+
+        for style in ("inline", "below_time", "below_all"):
+            html_timed = render(timed, style)
+            html_timeless = render(timeless, style)
+            if style == "inline":
+                self.assertIn(inline_label, html_timed)
+                self.assertNotIn(below_label, html_timed)
+            else:
+                self.assertIn('<div class="group-title">מנחה גדולה:</div>', html_timed)
+                self.assertIn(f'<span class="group-time" dir="ltr">12:30</span>{below_label}', html_timed)
+            if style == "below_all":
+                self.assertIn('<div class="group-title">ערבית - לאחר מנחה</div>', html_timeless)
+                self.assertIn(f'<div class="group-label-line">{below_label}</div>', html_timeless)
+                self.assertNotIn(inline_label, html_timeless)
+            else:
+                self.assertIn(inline_label, html_timeless)
+                self.assertNotIn("group-label-line", html_timeless)
+
+        with self.assertRaises(ValueError):
+            cpt.render_html_report({}, single_row_label_style="bogus")
 
     def test_board_url_resolution_precedence_and_secret_redaction(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

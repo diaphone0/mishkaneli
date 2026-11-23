@@ -66,6 +66,8 @@
   "ashkenazi_label": "אשכנזי",
   "suffix_desc": true,
   "order": "chronological",
-  "generate_html": true
+  "generate_html": true,
+  "gray_past_after_minutes": 5,
+  "single_row_label_style": "inline"
 }
 

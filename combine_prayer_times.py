@@ -59,6 +59,7 @@ from config import (  # noqa: E402
     DEFAULT_SEPHARDI_LABEL,
     ExtraTableConfig,
     ScheduleGroupConfig,
+    VALID_SINGLE_ROW_LABEL_STYLES,
     _parse_extra_tables_field,
     _parse_group_unmatched_order,
     _parse_patterns_field,
@@ -612,6 +613,27 @@ def _format_stacked_row_title_html(
     return f'<div class="group-title">{html_lib.escape(text_out)}</div>'
 
 
+def _split_minyan_suffix(
+    raw_desc: str,
+    minyan: str,
+    *,
+    sephardi_label: str,
+    ashkenazi_label: str,
+    suffix_desc: bool,
+) -> tuple[str, str]:
+    """Returns ``(desc_without_minyan_suffix, minyan_label)``; the label is ``""`` when ``raw_desc`` has no suffix."""
+    minyan_label = (
+        sephardi_label
+        if minyan == "sephardi"
+        else (ashkenazi_label if minyan == "ashkenazi" else "")
+    )
+    label_suffix = f"({minyan_label})" if (suffix_desc and minyan_label) else ""
+    stripped = raw_desc.strip()
+    if label_suffix and stripped.endswith(label_suffix):
+        return stripped[: -len(label_suffix)].rstrip(), minyan_label
+    return raw_desc, ""
+
+
 def _render_single_schedule_tr(
     row: dict,
     *,
@@ -620,6 +642,7 @@ def _render_single_schedule_tr(
     sephardi_label: str = DEFAULT_SEPHARDI_LABEL,
     ashkenazi_label: str = DEFAULT_ASHKENAZI_LABEL,
     suffix_desc: bool = True,
+    label_style: str = "inline",
 ) -> str:
     raw_desc = str(row.get("desc") or "")
     desc = html_lib.escape(raw_desc)
@@ -628,19 +651,32 @@ def _render_single_schedule_tr(
     minyan_cls = f" minyan-{html_lib.escape(minyan)}" if minyan else ""
     if time_str:
         if stack_time_on_newline:
+            below_time = label_style != "inline"
+            title_text, tile_label = (
+                _split_minyan_suffix(
+                    raw_desc,
+                    minyan,
+                    sephardi_label=sephardi_label,
+                    ashkenazi_label=ashkenazi_label,
+                    suffix_desc=suffix_desc,
+                )
+                if below_time
+                else (raw_desc, "")
+            )
             title_div = _format_stacked_row_title_html(
-                raw_desc,
-                minyan,
+                title_text,
+                "" if below_time else minyan,
                 sephardi_label=sephardi_label,
                 ashkenazi_label=ashkenazi_label,
                 suffix_desc=suffix_desc,
                 add_colon=True,
             )
+            label_html = f'<span class="group-label">{html_lib.escape(tile_label)}</span>' if tile_label else ""
             return (
                 f'<tr class="row group-row{minyan_cls}">'
                 f'<td class="group-cell" colspan="2">{title_div}'
                 f'<div class="group-times"><span class="group-item">'
-                f'<span class="group-time" dir="ltr">{time_str}</span>'
+                f'<span class="group-time" dir="ltr">{time_str}</span>{label_html}'
                 f"</span></div></td>"
                 f"</tr>"
             )
@@ -651,15 +687,35 @@ def _render_single_schedule_tr(
             f"</tr>"
         )
     if stack_time_on_newline:
+        below_all = label_style == "below_all"
+        title_text, label = (
+            _split_minyan_suffix(
+                raw_desc,
+                minyan,
+                sephardi_label=sephardi_label,
+                ashkenazi_label=ashkenazi_label,
+                suffix_desc=suffix_desc,
+            )
+            if below_all
+            else (raw_desc, "")
+        )
         title_div = _format_stacked_row_title_html(
-            raw_desc,
-            minyan,
+            title_text,
+            "" if below_all else minyan,
             sephardi_label=sephardi_label,
             ashkenazi_label=ashkenazi_label,
             suffix_desc=suffix_desc,
             add_colon=False,
         )
-        return f'<tr class="row group-row{minyan_cls}"><td class="group-cell" colspan="2">{title_div}</td></tr>'
+        label_html = (
+            f'<div class="group-label-line"><span class="group-label">{html_lib.escape(label)}</span></div>'
+            if label
+            else ""
+        )
+        return (
+            f'<tr class="row group-row{minyan_cls}">'
+            f'<td class="group-cell" colspan="2">{title_div}{label_html}</td></tr>'
+        )
     sub_cls = " sub-row" if allow_sub_row else ""
     return f'<tr class="row{sub_cls}{minyan_cls}"><td class="desc" colspan="2">{desc}</td></tr>'
 
@@ -699,24 +755,19 @@ def _render_group_tr(
             labels_by_time[t].append(lbl)
 
     items_html: list[str] = []
-    for idx, t in enumerate(time_order):
-        comma = "," if idx < len(time_order) - 1 else ""
+    for t in time_order:
         escaped_t = html_lib.escape(t)
         combined_lbl = _join_hebrew_labels(labels_by_time[t])
-        if combined_lbl:
-            escaped_lbl = html_lib.escape(combined_lbl)
-            items_html.append(
-                f'<span class="group-item">'
-                f'<span class="group-time" dir="ltr">{escaped_t}</span> '
-                f'<span class="group-label">({escaped_lbl})</span>{comma}'
-                f"</span>"
-            )
-        else:
-            items_html.append(
-                f'<span class="group-item">'
-                f'<span class="group-time" dir="ltr">{escaped_t}</span>{comma}'
-                f"</span>"
-            )
+        label_html = (
+            f'<span class="group-label">{html_lib.escape(combined_lbl)}</span>'
+            if combined_lbl
+            else ""
+        )
+        items_html.append(
+            f'<span class="group-item">'
+            f'<span class="group-time" dir="ltr">{escaped_t}</span>{label_html}'
+            f"</span>"
+        )
 
     title_div = f'<div class="group-title">{escaped_title}</div>' if escaped_title else ""
     items_joined = " ".join(items_html)
@@ -739,6 +790,7 @@ def _render_html_rows(
     ashkenazi_label: str = DEFAULT_ASHKENAZI_LABEL,
     suffix_desc: bool = True,
     tag_renderer: Callable[[str], str] | None = None,
+    single_row_label_style: str = "inline",
 ) -> str:
     if not rows:
         return '<tr><td class="empty" colspan="2">אין זמנים להצגה</td></tr>'
@@ -827,6 +879,7 @@ def _render_html_rows(
                     sephardi_label=sephardi_label,
                     ashkenazi_label=ashkenazi_label,
                     suffix_desc=suffix_desc,
+                    label_style=single_row_label_style,
                 )
             )
         prev_item = (kind, idx)
@@ -1022,6 +1075,9 @@ def render_html_report(
     ashkenazi_label: str = DEFAULT_ASHKENAZI_LABEL,
     suffix_desc: bool = True,
     tag_renderer: Callable[[str], str] | None = None,
+    timezone: str = "Asia/Jerusalem",
+    gray_past_after_minutes: float = 5,
+    single_row_label_style: str = "inline",
 ) -> str:
     """Renders a self-contained, responsive RTL Hebrew HTML report.
 
@@ -1039,6 +1095,8 @@ def render_html_report(
     """
     if mode not in ("both", "chol", "shabbos"):
         raise ValueError(f"Unsupported HTML report mode: {mode!r}")
+    if single_row_label_style not in VALID_SINGLE_ROW_LABEL_STYLES:
+        raise ValueError(f"Unsupported single_row_label_style: {single_row_label_style!r}")
 
     if report_title is not None:
         raw_title = tag_renderer(report_title) if (tag_renderer and report_title) else report_title
@@ -1081,6 +1139,7 @@ def render_html_report(
             ashkenazi_label=ashkenazi_label,
             suffix_desc=suffix_desc,
             tag_renderer=tag_renderer,
+            single_row_label_style=single_row_label_style,
         )
         if has_chol_toggle:
             weekday_full_rows_html = _render_html_rows(
@@ -1096,7 +1155,7 @@ def render_html_report(
                 f'<h2 class="card-header has-toggle">'
                 f'<span class="card-title">זמני תפילות לימי חול</span>{card_toggle_html}</h2>'
             )
-            weekday_table_body = f"""          <tbody class="view-compact">
+            weekday_table_body = f"""          <tbody class="view-compact" data-gray-past>
 {weekday_rows_html}
           </tbody>
           <tbody class="view-full" hidden>
@@ -1127,6 +1186,7 @@ def render_html_report(
             ashkenazi_label=ashkenazi_label,
             suffix_desc=suffix_desc,
             tag_renderer=tag_renderer,
+            single_row_label_style=single_row_label_style,
         )
         if has_shabbos_toggle:
             shabbos_full_rows_html = _render_html_rows(
@@ -1183,7 +1243,11 @@ def render_html_report(
         "shabbos": "זמני תפילות לשבת ומועד",
     }[mode]
     title_for_head = " ".join(shul_name.splitlines())
-    page_title = f"{title_for_head} — {title_suffix}" if title_for_head else title_suffix
+    page_title = (
+        title_for_head
+        if (title_for_head and mode == "both")
+        else (f"{title_for_head} — {title_suffix}" if title_for_head else title_suffix)
+    )
     single_mode = mode != "both"
     container_cls = "container single" if single_mode else "container"
     grid_cls = "grid single" if single_mode else "grid"
@@ -1232,6 +1296,34 @@ def render_html_report(
         if has_view_toggle
         else ""
     )
+    if has_chol_toggle:
+        # Client-side: dims compact-weekday entries once `gray_past_after_minutes` have passed in `timezone`.
+        script_html += """\n  <script>
+    (function () {
+      var body = document.querySelector("tbody[data-gray-past]");
+      if (!body) return;
+      var fmt;
+      try {
+        fmt = new Intl.DateTimeFormat("en-GB", {timeZone: __TZ__, hour: "2-digit", minute: "2-digit", hourCycle: "h23"});
+      } catch (e) { return; }
+      function update() {
+        var parts = fmt.formatToParts(new Date()), h = 0, m = 0;
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].type === "hour") h = parseInt(parts[i].value, 10);
+          if (parts[i].type === "minute") m = parseInt(parts[i].value, 10);
+        }
+        var now = h * 60 + m;
+        var items = body.querySelectorAll(".group-item");
+        for (var k = 0; k < items.length; k++) {
+          var t = items[k].querySelector(".group-time");
+          var mm = t && /^(\\d{1,2}):(\\d{2})$/.exec(t.textContent.trim());
+          items[k].classList.toggle("past", !!mm && parseInt(mm[1], 10) * 60 + parseInt(mm[2], 10) + __GRACE__ <= now);
+        }
+      }
+      update();
+      setInterval(update, 60000);
+    })();
+  </script>""".replace("__TZ__", json.dumps(timezone)).replace("__GRACE__", json.dumps(gray_past_after_minutes))
 
     if report_footer is None:
         footer_html = (
@@ -1258,24 +1350,32 @@ def render_html_report(
   <title>{page_title}</title>
   <style>
     :root {{
-      --bg: #f4f6fa;
-      --card-bg: #ffffff;
-      --header-bg: linear-gradient(135deg, #1b365d 0%, #274c82 100%);
-      --accent-gold: #c59b27;
-      --text: #1c2430;
-      --muted: #5a677a;
-      --border: #e4e9f2;
-      --time-bg: #eef3fb;
-      --time-text: #16335b;
+      --bg-top: #fdfcf6;
+      --bg-bottom: #ece0a6;
+      --title: #2f5f85;
+      --subtitle: #1c1a14;
+      --heading: #1b3a5c;
+      --text: #3d3b33;
+      --muted: #7d7a6c;
+      --border: #d9d5c4;
+      --time-text: #1c1a14;
+      --time-past: #8f8a73;
     }}
     * {{ box-sizing: border-box; }}
+    html {{ background: var(--bg-bottom); }}
     body {{
       margin: 0;
       padding: 24px 16px 36px;
       font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-      background: var(--bg);
       color: var(--text);
       line-height: 1.45;
+    }}
+    body::before {{
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
     }}
     .container {{
       max-width: 980px;
@@ -1285,27 +1385,22 @@ def render_html_report(
       max-width: 560px;
     }}
     .banner {{
-      background: var(--header-bg);
-      color: #ffffff;
-      border-radius: 14px;
-      padding: 22px 24px;
       text-align: center;
-      box-shadow: 0 6px 20px rgba(27, 54, 93, 0.16);
-      border-bottom: 4px solid var(--accent-gold);
-      margin-bottom: 22px;
+      padding: 8px 12px 20px;
+      margin-bottom: 8px;
     }}
     .banner h1 {{
       margin: 0;
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: 0.2px;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--title);
       white-space: pre-line;
     }}
     .subtitle {{
-      margin-top: 6px;
-      font-size: 1.15rem;
-      color: #f3e3b0;
-      font-weight: 600;
+      margin-top: 4px;
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: var(--subtitle);
       white-space: pre-line;
     }}
     .grid {{
@@ -1321,20 +1416,15 @@ def render_html_report(
       .grid {{ grid-template-columns: 1fr; }}
     }}
     .card {{
-      background: var(--card-bg);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      box-shadow: 0 3px 12px rgba(15, 29, 51, 0.06);
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
     }}
     .card-header {{
       margin: 0;
-      padding: 14px 18px;
-      font-size: 1.25rem;
+      padding: 14px 18px 6px;
+      font-size: 1.5rem;
       font-weight: 700;
-      color: var(--time-text);
-      background: #f8faff;
-      border-bottom: 2px solid var(--accent-gold);
+      color: var(--heading);
       text-align: center;
       white-space: pre-line;
     }}
@@ -1353,8 +1443,8 @@ def render_html_report(
       display: inline-flex;
       flex-shrink: 0;
       padding: 2px;
-      background: #e8eef9;
-      border: 1px solid #d0dcf0;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--border);
       border-radius: 999px;
       gap: 2px;
     }}
@@ -1373,10 +1463,10 @@ def render_html_report(
       transition: background 0.15s ease, color 0.15s ease;
     }}
     .toggle-btn:hover {{
-      color: var(--time-text);
+      color: var(--heading);
     }}
     .toggle-btn.active {{
-      background: var(--time-text);
+      background: var(--heading);
       color: #ffffff;
       font-weight: 700;
     }}
@@ -1399,7 +1489,7 @@ def render_html_report(
       border-top: none;
     }}
     tr.row:hover {{
-      background: #fafcff;
+      background: rgba(255, 255, 255, 0.35);
     }}
     td.desc {{
       font-weight: 500;
@@ -1426,22 +1516,43 @@ def render_html_report(
       color: var(--muted);
       font-size: 0.96rem;
     }}
+    td.group-cell {{
+      text-align: center;
+    }}
     .group-title {{
       font-weight: 700;
-      color: var(--time-text);
+      color: var(--heading);
       margin-bottom: 4px;
       white-space: pre-line;
     }}
     .group-title:last-child {{
       margin-bottom: 0;
     }}
+    td.group-cell > .group-title:only-child {{
+      padding-bottom: 14px;
+    }}
+    td.group-cell > .group-label-line {{
+      padding-bottom: 8px;
+    }}
     .group-times {{
-      line-height: 1.65;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      line-height: 1.2;
     }}
     .group-item {{
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 5.5rem;
+      padding: 6px 14px;
+      margin: 2px 0;
       white-space: nowrap;
+      border-inline-start: 1px solid var(--border);
     }}
     .group-time {{
+      font-family: inherit;
+      font-size: 1.25rem;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       color: var(--time-text);
@@ -1449,7 +1560,11 @@ def render_html_report(
     .group-label {{
       font-weight: 400;
       color: var(--muted);
-      font-size: 0.95em;
+      font-size: 0.9rem;
+    }}
+    .group-item.past .group-time,
+    .group-item.past .group-label {{
+      color: var(--time-past);
     }}
     td.empty {{
       padding: 20px;
@@ -1458,13 +1573,17 @@ def render_html_report(
     }}
     .footer {{
       margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
       text-align: center;
-      font-size: 0.88rem;
-      color: var(--muted);
+      font-size: 0.95rem;
+      color: var(--title);
       white-space: pre-line;
     }}
     @media print {{
       body {{ background: #ffffff; padding: 0; }}
+      html {{ background: #ffffff; }}
+      body::before {{ display: none; }}
       .banner, .card {{ box-shadow: none; }}
       .view-toggle {{ display: none; }}
       .grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
@@ -1770,6 +1889,9 @@ def main() -> None:
             ashkenazi_label=cfg.ashkenazi_label,
             suffix_desc=cfg.suffix_desc,
             tag_renderer=tag_renderer,
+            timezone=cfg.timezone or "Asia/Jerusalem",
+            gray_past_after_minutes=cfg.gray_past_after_minutes,
+            single_row_label_style=cfg.single_row_label_style,
         )
         html_targets: list[tuple[Path, str, dict]] = [
             (args.html_out, "both", combined_payload),

@@ -26,12 +26,18 @@
   "shabbos_groups": [],
   "chol_groups_exclude": [],
   "shabbos_groups_exclude": [],
+  "_comment_group_unmatched_order_choices": "'chronological' (default; unmatched rows stay in place) | 'below' (all groups first, unmatched rows below).",
   "group_unmatched_order": "chronological",
+  "_comment_group_no_suffix_label_choices": "'pattern' (default; label trimmed from the matched no_suffix_patterns regex) | 'minyan' (the row's minyan label) | null / '' / 'none' (no label) | any other string (used as a fixed label).",
   "group_no_suffix_label": "pattern",
   "sephardi_label": "ספרדי",
   "ashkenazi_label": "אשכנזי",
   "suffix_desc": true,
+  "_comment_order_choices": "'chronological' (default; Erev Shabbos rows before Shabbos morning, timeless rows stay attached to the row above) | 'time' (plain HH:MM sort) | 'concat' (Sephardi rows then Ashkenazi rows).",
   "order": "chronological",
-  "generate_html": true
+  "generate_html": true,
+  "gray_past_after_minutes": 5,
+  "_comment_single_row_label_style_choices": "Minyan label of ungrouped single-row entries when grouping is on: 'inline' (default; in the title with parentheses) | 'below_time' (under the time, timed entries only) | 'below_all' (also under titles that have no time).",
+  "single_row_label_style": "inline"
 }
 
